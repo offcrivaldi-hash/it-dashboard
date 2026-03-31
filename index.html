@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IT Management Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f5f5f4;--surface:#fff;--border:#e5e5e5;--border-hover:#d4d4d4;--text:#111;--text-muted:#737373;--text-hint:#a3a3a3;--accent:#111;--accent-fg:#fff;--danger:#dc2626;--danger-bg:#fef2f2;--success-bg:#f0fdf4;--success:#15803d;--warning-bg:#fffbeb;--warning:#92400e;--info-bg:#eff6ff;--info:#1e40af;--radius:8px;--radius-lg:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);line-height:1.5}
+.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:var(--bg)}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:400px}
+.auth-logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;margin-bottom:1.5rem}
+.auth-card h1{font-size:20px;font-weight:600;margin-bottom:1.5rem}
+.auth-switch{margin-top:1rem;text-align:center;font-size:13px;color:var(--text-muted)}
+.auth-switch a{color:var(--accent);text-decoration:none;font-weight:500}
+#page-app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:1.25rem 1rem;font-size:15px;font-weight:600;border-bottom:1px solid var(--border)}
+.sidebar-nav{flex:1;padding:.75rem .5rem;display:flex;flex-direction:column;gap:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);color:var(--text-muted);text-decoration:none;font-size:13px;font-weight:500;transition:all .15s}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--accent);color:var(--accent-fg)}
+.nav-item.active svg{stroke:var(--accent-fg)}
+.sidebar-footer{padding:.75rem;border-top:1px solid var(--border)}
+.user-info{display:flex;align-items:center;gap:10px;padding:8px 4px;margin-bottom:6px}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.user-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-email{font-size:11px;color:var(--text-hint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-meta{min-width:0}
+.btn-logout{width:100%;padding:7px;border:1px solid var(--border);border-radius:var(--radius);background:transparent;cursor:pointer;font-size:12px;color:var(--text-muted);transition:all .15s}
+.btn-logout:hover{background:var(--danger-bg);color:var(--danger);border-color:#fecaca}
+.main-content{flex:1;padding:2rem;overflow-y:auto;min-width:0}
+.page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem}
+.page-header h2{font-size:20px;font-weight:600}
+.page-subtitle{font-size:13px;color:var(--text-muted);margin-top:2px}
+.stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.25rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem}
+.stat-label{font-size:12px;color:var(--text-muted);margin-bottom:4px}
+.stat-val{font-size:24px;font-weight:600}
+.stat-val.danger{color:var(--danger)}
+.stat-val.warning{color:#d97706}
+.toolbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+.toolbar input,.toolbar select{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--radius);padding:7px 10px;font-size:13px;outline:none;transition:border-color .15s}
+.toolbar input:focus,.toolbar select:focus{border-color:var(--accent)}
+.toolbar input{flex:1;min-width:160px}
+.view-toggle{display:flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.view-btn{padding:6px 12px;background:transparent;border:none;cursor:pointer;font-size:13px;color:var(--text-muted);transition:all .15s}
+.view-btn.active{background:var(--accent);color:var(--accent-fg)}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:700px}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fafafa}
+.empty-row{text-align:center;padding:3rem;color:var(--text-muted)}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.asset-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem;transition:border-color .15s}
+.asset-card:hover{border-color:var(--border-hover)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.card-name{font-weight:600;font-size:14px}
+.card-cat{font-size:11px;color:var(--text-muted);margin-top:2px}
+.card-info{font-size:12px;color:var(--text-muted);line-height:2}
+.card-info span{color:var(--text)}
+.card-actions{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-aktif{background:var(--success-bg);color:var(--success)}
+.badge-rusak{background:var(--danger-bg);color:var(--danger)}
+.badge-dipinjam{background:var(--warning-bg);color:var(--warning)}
+.badge-nonaktif{background:#f5f5f5;color:#525252}
+.badge-open{background:var(--info-bg);color:var(--info)}
+.badge-progress{background:var(--warning-bg);color:var(--warning)}
+.badge-resolved{background:var(--success-bg);color:var(--success)}
+.badge-closed{background:#f5f5f5;color:#525252}
+.badge-high{background:var(--danger-bg);color:var(--danger)}
+.badge-medium{background:var(--warning-bg);color:var(--warning)}
+.badge-low{background:var(--success-bg);color:var(--success)}
+.btn-primary{background:var(--accent);color:var(--accent-fg);border:1px solid var(--accent);border-radius:var(--radius);padding:8px 16px;cursor:pointer;font-size:13px;font-weight:500;transition:opacity .15s;white-space:nowrap}
+.btn-primary:hover{opacity:.85}
+.btn-secondary{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px 16px;cursor:pointer;font-size:13px;transition:background .15s}
+.btn-secondary:hover{background:var(--bg)}
+.btn-full{width:100%;padding:10px;background:var(--accent);color:var(--accent-fg);border:none;border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:500;margin-top:.5rem;transition:opacity .15s}
+.btn-full:hover{opacity:.85}
+.btn-full:disabled{opacity:.5;cursor:not-allowed}
+.act-btn{padding:4px 9px;font-size:11px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer;color:var(--text-muted);transition:all .15s}
+.act-btn:hover{background:var(--bg);color:var(--text)}
+.act-del{border-color:#fecaca;color:var(--danger)}
+.act-del:hover{background:var(--danger-bg)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal-box{background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border)}
+.modal-header h3{font-size:16px;font-weight:600}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-muted);line-height:1;padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:14px}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:12px;font-weight:500;color:var(--text-muted)}
+.form-group input,.form-group select,.form-group textarea{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--radius);padding:8px 10px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.alert-error{background:var(--danger-bg);color:var(--danger);border:1px solid #fecaca;border-radius:var(--radius);padding:10px 12px;font-size:13px;margin-bottom:1rem}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.mono{font-family:'SF Mono','Fira Code',monospace;font-size:12px}
+</style>
+</head>
+<body>
+
+<div id="page-login" class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#111"/><path d="M8 16h4v8H8v-8zm6-6h4v14h-4V10zm6 3h4v11h-4V13z" fill="#fff"/></svg>
+      <span>IT Dashboard</span>
+    </div>
+    <h1>Masuk ke akun Anda</h1>
+    <div id="login-error" class="alert-error" style="display:none"></div>
+    <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="email@domain.com" autocomplete="email"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn-full" id="login-btn" onclick="doLogin()">Masuk</button>
+    <div class="auth-switch">Belum punya akun? <a href="#" onclick="showPage('register')">Daftar</a></div>
+  </div>
+</div>
+
+<div id="page-register" class="auth-page" style="display:none">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#111"/><path d="M8 16h4v8H8v-8zm6-6h4v14h-4V10zm6 3h4v11h-4V13z" fill="#fff"/></svg>
+      <span>IT Dashboard</span>
+    </div>
+    <h1>Buat akun baru</h1>
+    <div id="register-error" class="alert-error" style="display:none"></div>
+    <div class="form-group"><label>Nama Lengkap</label><input type="text" id="reg-name" placeholder="Nama Anda"></div>
+    <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="email@domain.com"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="reg-password" placeholder="Min. 6 karakter"></div>
+    <button class="btn-full" id="register-btn" onclick="doRegister()">Daftar</button>
+    <div class="auth-switch">Sudah punya akun? <a href="#" onclick="showPage('login')">Masuk</a></div>
+  </div>
+</div>
+
+<div id="page-app" style="display:none">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#111"/><path d="M8 16h4v8H8v-8zm6-6h4v14h-4V10zm6 3h4v11h-4V13z" fill="#fff"/></svg>
+      <span>IT Dashboard</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" onclick="switchTab('assets',this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Aset IT
+      </a>
+      <a href="#" class="nav-item" onclick="switchTab('tickets',this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5v2M15 11v2M15 17v2M5 5h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4V7a2 2 0 0 1 2-2z"/></svg>Tiket Helpdesk
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <div class="user-meta">
+          <div class="user-name" id="user-name">User</div>
+          <div class="user-email" id="user-email-display">-</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Keluar</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <section id="tab-assets" class="tab-content active">
+      <div class="page-header">
+        <div><h2>Aset IT</h2><p class="page-subtitle">Kelola inventaris perangkat & peralatan IT</p></div>
+        <button class="btn-primary" onclick="openModal('asset-modal')">+ Tambah Aset</button>
+      </div>
+      <div class="stats-row" id="asset-stats"></div>
+      <div class="toolbar">
+        <input type="text" id="asset-search" placeholder="Cari nama, serial, lokasi..." oninput="renderAssets()">
+        <select id="asset-filter-kat" onchange="renderAssets()"><option value="">Semua kategori</option><option>Laptop</option><option>PC</option><option>Printer</option><option>Server</option><option>Network</option><option>Monitor</option><option>Lainnya</option></select>
+        <select id="asset-filter-status" onchange="renderAssets()"><option value="">Semua status</option><option>Aktif</option><option>Rusak</option><option>Dipinjam</option><option>Nonaktif</option></select>
+        <div class="view-toggle">
+          <button id="btn-view-table" class="view-btn active" onclick="setAssetView('table')">Tabel</button>
+          <button id="btn-view-card" class="view-btn" onclick="setAssetView('card')">Kartu</button>
+        </div>
+      </div>
+      <div id="asset-table-view"><div class="table-wrap"><table>
+        <thead><tr><th>Nama Aset</th><th>Kategori</th><th>Serial / Kode</th><th>Lokasi</th><th>Status</th><th>Assigned To</th><th>Garansi</th><th>Aksi</th></tr></thead>
+        <tbody id="asset-tbody"></tbody>
+      </table></div></div>
+      <div id="asset-card-view" style="display:none"><div class="cards-grid" id="asset-cards"></div></div>
+    </section>
+    <section id="tab-tickets" class="tab-content" style="display:none">
+      <div class="page-header">
+        <div><h2>Tiket Helpdesk</h2><p class="page-subtitle">Kelola permintaan & insiden IT</p></div>
+        <button class="btn-primary" onclick="openModal('ticket-modal')">+ Buat Tiket</button>
+      </div>
+      <div class="stats-row" id="ticket-stats"></div>
+      <div class="toolbar">
+        <input type="text" id="ticket-search" placeholder="Cari judul, pelapor..." oninput="renderTickets()">
+        <select id="ticket-filter-status" onchange="renderTickets()"><option value="">Semua status</option><option>Open</option><option>In Progress</option><option>Resolved</option><option>Closed</option></select>
+        <select id="ticket-filter-priority" onchange="renderTickets()"><option value="">Semua prioritas</option><option>High</option><option>Medium</option><option>Low</option></select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th style="width:70px">ID</th><th>Judul</th><th>Pelapor</th><th>Kategori</th><th>Prioritas</th><th>Status</th><th>Assigned To</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+        <tbody id="ticket-tbody"></tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+
+<div id="asset-modal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header"><h3 id="asset-modal-title">Tambah Aset</h3><button class="modal-close" onclick="closeModal('asset-modal')">&times;</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="asset-edit-id">
+      <div class="form-row-2">
+        <div class="form-group"><label>Nama Aset *</label><input id="f-name" placeholder="cth. Laptop Dell XPS 15"></div>
+        <div class="form-group"><label>Kategori</label><select id="f-kat"><option>Laptop</option><option>PC</option><option>Printer</option><option>Server</option><option>Network</option><option>Monitor</option><option>Lainnya</option></select></div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group"><label>Serial / Kode Aset</label><input id="f-serial" placeholder="cth. SN-2024-001"></div>
+        <div class="form-group"><label>Lokasi / Ruangan</label><input id="f-lokasi" placeholder="cth. Ruang Server Lt.2"></div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group"><label>Status</label><select id="f-status"><option>Aktif</option><option>Rusak</option><option>Dipinjam</option><option>Nonaktif</option></select></div>
+        <div class="form-group"><label>Assigned To</label><input id="f-assigned" placeholder="cth. Bowo / IT Dept"></div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group"><label>Tanggal Beli</label><input type="date" id="f-beli"></div>
+        <div class="form-group"><label>Garansi Hingga</label><input type="date" id="f-garansi"></div>
+      </div>
+      <div class="form-group"><label>Catatan</label><textarea id="f-notes" placeholder="Spesifikasi, kondisi, dll..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('asset-modal')">Batal</button><button class="btn-primary" onclick="saveAsset()">Simpan</button></div>
+  </div>
+</div>
+
+<div id="ticket-modal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header"><h3 id="ticket-modal-title">Buat Tiket Baru</h3><button class="modal-close" onclick="closeModal('ticket-modal')">&times;</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="ticket-edit-id">
+      <div class="form-group"><label>Judul Masalah *</label><input id="t-judul" placeholder="cth. Printer tidak bisa print"></div>
+      <div class="form-row-2">
+        <div class="form-group"><label>Pelapor</label><input id="t-pelapor" placeholder="Nama / divisi"></div>
+        <div class="form-group"><label>Kategori</label><select id="t-kat"><option>Hardware</option><option>Software</option><option>Jaringan</option><option>Email</option><option>Akses / Password</option><option>Lainnya</option></select></div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group"><label>Prioritas</label><select id="t-priority"><option>Medium</option><option>High</option><option>Low</option></select></div>
+        <div class="form-group"><label>Status</label><select id="t-status"><option>Open</option><option>In Progress</option><option>Resolved</option><option>Closed</option></select></div>
+      </div>
+      <div class="form-group"><label>Assigned To</label><input id="t-assigned" placeholder="Teknisi yang menangani"></div>
+      <div class="form-group"><label>Deskripsi</label><textarea id="t-desc" placeholder="Jelaskan masalah secara detail..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('ticket-modal')">Batal</button><button class="btn-primary" onclick="saveTicket()">Simpan</button></div>
+  </div>
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import{getFirestore,collection,doc,addDoc,updateDoc,deleteDoc,onSnapshot,query,orderBy,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app=initializeApp({apiKey:"AIzaSyCkzvW_-ehg38ZvG4tdlbyJt7xJoys3u24",authDomain:"it-dashboard-rivaldi.firebaseapp.com",projectId:"it-dashboard-rivaldi",storageBucket:"it-dashboard-rivaldi.firebasestorage.app",messagingSenderId:"6897471108",appId:"1:6897471108:web:734b722d214900b5d1fcd1"});
+const auth=getAuth(app),db=getFirestore(app);
+let assets=[],tickets=[],ticketCounter=1,editingAsset=null,editingTicket=null,unsubA=null,unsubT=null,uid=null;
+
+onAuthStateChanged(auth,user=>{
+  if(user){
+    G("page-login").style.display="none";G("page-register").style.display="none";G("page-app").style.display="flex";
+    const n=user.displayName||user.email.split("@")[0];
+    G("user-name").textContent=n;G("user-email-display").textContent=user.email;G("user-avatar").textContent=n.charAt(0).toUpperCase();
+    uid=user.uid;initApp(uid);
+  }else{G("page-login").style.display="flex";G("page-register").style.display="none";G("page-app").style.display="none";uid=null;}
+});
+
+function initApp(u){
+  if(unsubA)unsubA();if(unsubT)unsubT();
+  unsubA=onSnapshot(query(collection(db,"users",u,"assets"),orderBy("createdAt","desc")),s=>{assets=s.docs.map(d=>({id:d.id,...d.data()}));renderAssets();renderAssetStats();});
+  unsubT=onSnapshot(query(collection(db,"users",u,"tickets"),orderBy("createdAt","desc")),s=>{tickets=s.docs.map(d=>({id:d.id,...d.data()}));if(tickets.length)ticketCounter=Math.max(...tickets.map(t=>t.num||0))+1;renderTickets();renderTicketStats();});
+}
+
+window.doLogin=async()=>{
+  const e=G("login-email").value.trim(),p=G("login-password").value,btn=G("login-btn"),err=G("login-error");
+  err.style.display="none";if(!e||!p){sErr(err,"Email dan password wajib diisi.");return;}
+  btn.disabled=true;btn.textContent="Memproses...";
+  try{await signInWithEmailAndPassword(auth,e,p);}catch(ex){sErr(err,fErr(ex.code));btn.disabled=false;btn.textContent="Masuk";}
+};
+window.doRegister=async()=>{
+  const n=G("reg-name").value.trim(),e=G("reg-email").value.trim(),p=G("reg-password").value,btn=G("register-btn"),err=G("register-error");
+  err.style.display="none";if(!n||!e||!p){sErr(err,"Semua field wajib diisi.");return;}if(p.length<6){sErr(err,"Password minimal 6 karakter.");return;}
+  btn.disabled=true;btn.textContent="Mendaftarkan...";
+  try{const c=await createUserWithEmailAndPassword(auth,e,p);await updateProfile(c.user,{displayName:n});}catch(ex){sErr(err,fErr(ex.code));btn.disabled=false;btn.textContent="Daftar";}
+};
+window.doLogout=async()=>{if(confirm("Yakin ingin keluar?"))await signOut(auth);};
+window.showPage=p=>{G("page-login").style.display=p==="login"?"flex":"none";G("page-register").style.display=p==="register"?"flex":"none";};
+window.switchTab=(tab,el)=>{document.querySelectorAll(".tab-content").forEach(t=>t.style.display="none");document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));G("tab-"+tab).style.display="block";el.classList.add("active");};
+window.setAssetView=v=>{G("btn-view-table").classList.toggle("active",v==="table");G("btn-view-card").classList.toggle("active",v==="card");G("asset-table-view").style.display=v==="table"?"block":"none";G("asset-card-view").style.display=v==="card"?"block":"none";};
+
+window.renderAssets=()=>{
+  const q=G("asset-search")?.value.toLowerCase()||"",kat=G("asset-filter-kat")?.value||"",st=G("asset-filter-status")?.value||"";
+  let f=assets;if(q)f=f.filter(a=>[a.name,a.serial,a.lokasi,a.assigned,a.kategori].join(" ").toLowerCase().includes(q));if(kat)f=f.filter(a=>a.kategori===kat);if(st)f=f.filter(a=>a.status===st);
+  const tb=G("asset-tbody"),cd=G("asset-cards");
+  if(!f.length){tb.innerHTML=`<tr><td colspan="8" class="empty-row">Belum ada aset. Klik "+ Tambah Aset".</td></tr>`;cd.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:3rem;color:#737373">Belum ada aset.</div>`;return;}
+  tb.innerHTML=f.map(a=>`<tr><td style="font-weight:500">${x(a.name)}</td><td>${x(a.kategori)}</td><td class="mono">${x(a.serial||"-")}</td><td>${x(a.lokasi||"-")}</td><td>${bdg(a.status)}</td><td>${x(a.assigned||"-")}</td><td>${fd(a.garansi)}</td><td><button class="act-btn" onclick="openAssetModal('${a.id}')">Edit</button><button class="act-btn act-del" onclick="deleteAsset('${a.id}')">Hapus</button></td></tr>`).join("");
+  cd.innerHTML=f.map(a=>`<div class="asset-card"><div class="card-top"><div><div class="card-name">${x(a.name)}</div><div class="card-cat">${x(a.kategori)}</div></div>${bdg(a.status)}</div><div class="card-info">Serial: <span>${x(a.serial||"-")}</span><br>Lokasi: <span>${x(a.lokasi||"-")}</span><br>Assigned: <span>${x(a.assigned||"-")}</span><br>Garansi: <span>${fd(a.garansi)}</span></div><div class="card-actions"><button class="act-btn" onclick="openAssetModal('${a.id}')">Edit</button><button class="act-btn act-del" onclick="deleteAsset('${a.id}')">Hapus</button></div></div>`).join("");
+};
+window.renderAssetStats=()=>{
+  const now=new Date(),gh=assets.filter(a=>a.garansi&&new Date(a.garansi)<now).length;
+  G("asset-stats").innerHTML=`<div class="stat-card"><div class="stat-label">Total aset</div><div class="stat-val">${assets.length}</div></div><div class="stat-card"><div class="stat-label">Aktif</div><div class="stat-val">${assets.filter(a=>a.status==="Aktif").length}</div></div><div class="stat-card"><div class="stat-label">Rusak</div><div class="stat-val danger">${assets.filter(a=>a.status==="Rusak").length}</div></div><div class="stat-card"><div class="stat-label">Garansi habis</div><div class="stat-val ${gh>0?"warning":""}">${gh}</div></div>`;
+};
+window.renderTickets=()=>{
+  const q=G("ticket-search")?.value.toLowerCase()||"",st=G("ticket-filter-status")?.value||"",pr=G("ticket-filter-priority")?.value||"";
+  let f=tickets;if(q)f=f.filter(t=>[t.judul,t.pelapor,t.assigned,t.desc].join(" ").toLowerCase().includes(q));if(st)f=f.filter(t=>t.status===st);if(pr)f=f.filter(t=>t.priority===pr);
+  const tb=G("ticket-tbody");
+  if(!f.length){tb.innerHTML=`<tr><td colspan="9" class="empty-row">Belum ada tiket. Klik "+ Buat Tiket".</td></tr>`;return;}
+  tb.innerHTML=f.map(t=>`<tr><td class="mono" style="color:#737373">#${t.num||"-"}</td><td style="font-weight:500">${x(t.judul)}</td><td>${x(t.pelapor||"-")}</td><td>${x(t.kategori)}</td><td>${bdg(t.priority)}</td><td>${bdg(t.status)}</td><td>${x(t.assigned||"-")}</td><td style="color:#737373;font-size:12px">${fd(t.tanggal)}</td><td><button class="act-btn" onclick="openTicketModal('${t.id}')">Edit</button><button class="act-btn act-del" onclick="deleteTicket('${t.id}')">Hapus</button></td></tr>`).join("");
+};
+window.renderTicketStats=()=>{
+  G("ticket-stats").innerHTML=`<div class="stat-card"><div class="stat-label">Total tiket</div><div class="stat-val">${tickets.length}</div></div><div class="stat-card"><div class="stat-label">Open</div><div class="stat-val">${tickets.filter(t=>t.status==="Open").length}</div></div><div class="stat-card"><div class="stat-label">In Progress</div><div class="stat-val warning">${tickets.filter(t=>t.status==="In Progress").length}</div></div><div class="stat-card"><div class="stat-label">Selesai</div><div class="stat-val">${tickets.filter(t=>t.status==="Resolved"||t.status==="Closed").length}</div></div>`;
+};
+
+window.openAssetModal=id=>{editingAsset=id||null;const a=id?assets.find(z=>z.id===id):null;G("asset-modal-title").textContent=id?"Edit Aset":"Tambah Aset";sV({"f-name":a?.name,"f-serial":a?.serial,"f-lokasi":a?.lokasi,"f-assigned":a?.assigned,"f-notes":a?.notes});G("f-kat").value=a?.kategori||"Laptop";G("f-status").value=a?.status||"Aktif";G("f-beli").value=a?.beli||"";G("f-garansi").value=a?.garansi||"";openModal("asset-modal");};
+window.saveAsset=async()=>{
+  const name=G("f-name").value.trim();if(!name){alert("Nama aset wajib diisi.");return;}
+  const d={name,kategori:G("f-kat").value,serial:G("f-serial").value.trim(),lokasi:G("f-lokasi").value.trim(),status:G("f-status").value,assigned:G("f-assigned").value.trim(),beli:G("f-beli").value,garansi:G("f-garansi").value,notes:G("f-notes").value.trim()};
+  try{if(editingAsset)await updateDoc(doc(db,"users",uid,"assets",editingAsset),d);else{d.createdAt=serverTimestamp();await addDoc(collection(db,"users",uid,"assets"),d);}closeModal("asset-modal");}catch(e){alert("Gagal: "+e.message);}
+};
+window.deleteAsset=async id=>{if(!confirm("Hapus aset ini?"))return;await deleteDoc(doc(db,"users",uid,"assets",id));};
+
+window.openTicketModal=id=>{editingTicket=id||null;const t=id?tickets.find(z=>z.id===id):null;G("ticket-modal-title").textContent=id?"Edit Tiket":"Buat Tiket Baru";sV({"t-judul":t?.judul,"t-pelapor":t?.pelapor,"t-assigned":t?.assigned,"t-desc":t?.desc});G("t-kat").value=t?.kategori||"Hardware";G("t-priority").value=t?.priority||"Medium";G("t-status").value=t?.status||"Open";openModal("ticket-modal");};
+window.saveTicket=async()=>{
+  const judul=G("t-judul").value.trim();if(!judul){alert("Judul tiket wajib diisi.");return;}
+  const d={judul,pelapor:G("t-pelapor").value.trim(),kategori:G("t-kat").value,priority:G("t-priority").value,status:G("t-status").value,assigned:G("t-assigned").value.trim(),desc:G("t-desc").value.trim(),tanggal:new Date().toISOString().split("T")[0]};
+  try{if(editingTicket)await updateDoc(doc(db,"users",uid,"tickets",editingTicket),d);else{d.num=ticketCounter++;d.createdAt=serverTimestamp();await addDoc(collection(db,"users",uid,"tickets"),d);}closeModal("ticket-modal");}catch(e){alert("Gagal: "+e.message);}
+};
+window.deleteTicket=async id=>{if(!confirm("Hapus tiket ini?"))return;await deleteDoc(doc(db,"users",uid,"tickets",id));};
+
+window.openModal=id=>G(id).style.display="flex";
+window.closeModal=id=>G(id).style.display="none";
+document.querySelectorAll(".modal-overlay").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.style.display="none";}));
+document.addEventListener("keydown",e=>{if(e.key==="Enter"){if(G("page-login").style.display!=="none")window.doLogin();if(G("page-register").style.display!=="none")window.doRegister();}});
+
+function G(id){return document.getElementById(id);}
+function x(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function sV(m){Object.entries(m).forEach(([k,v])=>{const el=G(k);if(el)el.value=v||"";});}
+function fd(d){if(!d)return"-";const p=d.split("-");return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d;}
+function bdg(s){const m={Aktif:"aktif",Rusak:"rusak",Dipinjam:"dipinjam",Nonaktif:"nonaktif",Open:"open","In Progress":"progress",Resolved:"resolved",Closed:"closed",High:"high",Medium:"medium",Low:"low"};return`<span class="badge badge-${m[s]||"nonaktif"}">${x(s)}</span>`;}
+function sErr(el,msg){el.textContent=msg;el.style.display="block";}
+function fErr(c){const m={"auth/user-not-found":"Akun tidak ditemukan.","auth/wrong-password":"Password salah.","auth/invalid-email":"Format email tidak valid.","auth/email-already-in-use":"Email sudah terdaftar.","auth/weak-password":"Password terlalu lemah.","auth/too-many-requests":"Terlalu banyak percobaan.","auth/invalid-credential":"Email atau password salah."};return m[c]||"Terjadi kesalahan. Coba lagi.";}
+</script>
+</body>
+</html>
